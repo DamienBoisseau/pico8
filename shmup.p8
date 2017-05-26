@@ -1,6 +1,8 @@
 pico-8 cartridge // http://www.pico-8.com
 version 8
 __lua__
+debug = false
+
 function _init()
  t=0
  
@@ -8,12 +10,14 @@ function _init()
   s=1,
   x=60,
   y=60,
-  h=3
-  p=0
+  h=3,
+  p=0,
+  box = {x1=0,y1=0,x2=7,y2=7}
  }
- bullets = {}
- enemies = {}
  
+ bullets = {}
+
+ enemies = {}
  for i=1,5 do
 	 add(enemies, {
 	  sp=17,
@@ -21,11 +25,21 @@ function _init()
 	  m_y=60-i*8,
 	  x=-32,
 	  y=-32,
-	  r=16
+	  r=16,
+	  box = {x1=0,y1=0,x2=7,y2=7}
 	 })
 	end
 end
 
+function abs_box(s)
+ local box = {}
+ box.x1 = s.box.x1 + s.x
+ box.y1 = s.box.y1 + s.y
+ box.x2 = s.box.x2 + s.x
+ box.y2 = s.box.y2 + s.y
+ 
+ return box
+end
 function _update()
  t = t+1
  
@@ -45,11 +59,21 @@ function _update()
   or b.y > 128 then
   	del(bullets, b)
   end
+  for e in all(enemies) do
+   if coll(e, b) then
+    del(enemies,e)
+    del(bullets,b)
+    ship.p += 1
+   end
+  end
  end
  
  for e in all(enemies) do
   e.x = e.r*sin(t/50) + e.m_x
   e.y = e.r*cos(t/50) + e.m_y
+  if coll(e,ship) then
+  	-- dead
+  end
  end
   
  if btn(0) then ship.x-=2 end
@@ -61,14 +85,50 @@ end
 
 function _draw()
  cls()
+ 
+ print(ship.p,120,0)
+ 
  spr(ship.sp,ship.x,ship.y)
+ 
+  -- debug ship hitbox
+  if debug then
+   rect(
+    ship.box.x1 + ship.x,
+    ship.box.y1 + ship.y,
+    ship.box.x2 + ship.x,
+    ship.box.y2 + ship.y,
+    1
+   )
+  end
  
  for b in all(bullets) do
   spr(b.sp,b.x,b.y)
+  
+  -- debug bullets hitbox
+  if debug then
+   rect(
+    b.box.x1 + b.x,
+    b.box.y1 + b.y,
+    b.box.x2 + b.x,
+    b.box.y2 + b.y,
+    1
+   )
+  end
  end
  
  for e in all(enemies) do
   spr(e.sp,e.x, e.y)
+  
+  -- debug enemies hitbox
+  if debug then
+   rect(
+    e.box.x1 + e.x,
+    e.box.y1 + e.y,
+    e.box.x2 + e.x,
+    e.box.y2 + e.y,
+    1
+   )
+  end
  end
  
  for i=1,4 do
@@ -80,13 +140,28 @@ function _draw()
  end
 end
 
+function coll(a,b)
+	local box_a = abs_box(a)
+ local	box_b = abs_box(b)
+	
+	if box_a.x1 > box_b.x2 or
+	   box_a.y1 > box_b.y2 or
+	   box_b.x1 > box_a.x2 or
+	   box_b.y1 > box_a.y2 then
+	 return false
+	end
+	
+	return true
+end
+
 function fire()
  local b = {
   sp=0,
   x=ship.x,
   y=ship.y-3,
   dx=0,
-  dy=-9
+  dy=-9,
+  box = {x1=2,y1=0,x2=4,y2=4}
  }
  add(bullets,b)
 end
