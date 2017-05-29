@@ -1,7 +1,11 @@
 pico-8 cartridge // http://www.pico-8.com
 version 8
 __lua__
-debug = false
+debug = true
+
+-- options
+invicibility_frames = 30
+ship_max_health = 8
 
 function _init()
  t=0
@@ -9,9 +13,11 @@ function _init()
  ship = {
   s=1,
   x=60,
-  y=60,
-  h=3,
+  y=100,
+  h=ship_max_health,
   p=0,
+  i=false,
+  t=0,
   box = {x1=0,y1=0,x2=7,y2=7}
  }
  
@@ -29,7 +35,28 @@ function _init()
 	  box = {x1=0,y1=0,x2=7,y2=7}
 	 })
 	end
+	start()
 end
+
+function start()
+ _update = update_game
+ _draw = draw_game
+end
+
+function game_over()
+ _update = update_over
+ _draw = draw_over 
+end
+
+function update_over()
+ 
+end
+
+function draw_over()
+ cls()
+ print("game over",50,50,4)
+end
+
 
 function abs_box(s)
  local box = {}
@@ -40,7 +67,8 @@ function abs_box(s)
  
  return box
 end
-function _update()
+
+function update_game()
  t = t+1
  
  if(t%6 < 3) then
@@ -71,11 +99,25 @@ function _update()
  for e in all(enemies) do
   e.x = e.r*sin(t/50) + e.m_x
   e.y = e.r*cos(t/50) + e.m_y
-  if coll(e,ship) then
-  	-- dead
+  if coll(e,ship)
+  and not ship.i then
+   ship.h -= 1
+  	ship.i = true
+  	if ship.h <= 0 then
+  		game_over()
+  	end
   end
  end
-  
+ 
+ if ship.i then
+  ship.t += 1
+ 
+  if ship.t >= invicibility_frames then
+   ship.i = false
+   ship.t = 0
+  end
+ end
+
  if btn(0) then ship.x-=2 end
  if btn(1) then ship.x+=2 end
  if btn(2) then ship.y-=2 end
@@ -83,14 +125,14 @@ function _update()
  if btnp(5) then fire() end
 end
 
-function _draw()
+function draw_game()
  cls()
  
  print(ship.p,120,0)
  
  spr(ship.sp,ship.x,ship.y)
  
-  -- debug ship hitbox
+  -- debug ship hitbox and invicibily frames
   if debug then
    rect(
     ship.box.x1 + ship.x,
@@ -99,6 +141,7 @@ function _draw()
     ship.box.y2 + ship.y,
     1
    )
+  print(ship.t,0,120,5)
   end
  
  for b in all(bullets) do
@@ -131,7 +174,7 @@ function _draw()
   end
  end
  
- for i=1,4 do
+ for i=1,ship_max_health do
   if(i<=ship.h) then
    spr(33,0+6*i,0)
   else
