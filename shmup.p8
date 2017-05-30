@@ -20,21 +20,24 @@ function _init()
   t=0,
   box = {x1=0,y1=0,x2=7,y2=7}
  }
+ stars = {}
  bullets = {}
  explosions = {}
  enemies = {}
+ 
+ -- TODO : Randomly generate enemies inside update_game()
  for i=1,5 do
-	 add(enemies, {
-	  sp=17,
-	  m_x=i*20,
-	  m_y=60-i*8,
-	  x=-32,
-	  y=-32,
-	  r=16,
-	  box = {x1=0,y1=0,x2=7,y2=7}
-	 })
-	end
-	start()
+  add(enemies, {
+   sp=17,
+   m_x=i*20,
+   m_y=60-i*8,
+   x=-32,
+   y=-32,
+   r=16,
+   box = {x1=0,y1=0,x2=7,y2=7}
+  })
+ end
+ start()
 end
 
 function start()
@@ -42,36 +45,11 @@ function start()
  _draw = draw_game
 end
 
-function game_over()
- _update = update_over
- _draw = draw_over 
-end
-
-function update_over()
- 
-end
-
-function draw_over()
- cls()
- print("game over",50,50,4)
-end
-
-
-function abs_box(s)
- local box = {}
- box.x1 = s.box.x1 + s.x
- box.y1 = s.box.y1 + s.y
- box.x2 = s.box.x2 + s.x
- box.y2 = s.box.y2 + s.y
- 
- return box
-end
-
 function update_game()
  t = t+1
  
  if(t%6 < 3) then
- 	ship.sp = 1
+  ship.sp = 1
  else
   ship.sp = 2
  end
@@ -84,7 +62,7 @@ function update_game()
   or b.x > 128
   or b.y < 0
   or b.y > 128 then
-  	del(bullets, b)
+   del(bullets, b)
   end
   for e in all(enemies) do
    if coll(e, b) then
@@ -102,10 +80,10 @@ function update_game()
   if coll(e,ship)
   and not ship.i then
    ship.h -= 1
-  	ship.i = true
-  	if ship.h <= 0 then
-  		game_over()
-  	end
+   ship.i = true
+   if ship.h <= 0 then
+    game_over()
+   end
   end
  end
  
@@ -118,13 +96,12 @@ function update_game()
  
  if ship.i then
   ship.t += 1
- 
   if ship.t >= invicibility_frames then
    ship.i = false
    ship.t = 0
   end
  end
-
+ 
  if btn(0) then ship.x-=2 end
  if btn(1) then ship.x+=2 end
  if btn(2) then ship.y-=2 end
@@ -141,17 +118,17 @@ function draw_game()
   spr(ship.sp,ship.x,ship.y)
  end
  
-  -- debug ship hitbox and invicibily frames
-  if debug then
-   rect(
-    ship.box.x1 + ship.x,
-    ship.box.y1 + ship.y,
-    ship.box.x2 + ship.x,
-    ship.box.y2 + ship.y,
-    1
-   )
+ -- debug ship hitbox and invicibily frames
+ if debug then
+  rect(
+   ship.box.x1 + ship.x,
+   ship.box.y1 + ship.y,
+   ship.box.x2 + ship.x,
+   ship.box.y2 + ship.y,
+   1
+  )
   print(ship.t,0,120,5)
-  end
+ end
  
  for b in all(bullets) do
   spr(b.sp,b.x,b.y)
@@ -196,22 +173,42 @@ function draw_game()
  end
 end
 
-function coll(a,b)
-	local box_a = abs_box(a)
- local	box_b = abs_box(b)
-	
-	if box_a.x1 > box_b.x2 or
-	   box_a.y1 > box_b.y2 or
-	   box_b.x1 > box_a.x2 or
-	   box_b.y1 > box_a.y2 then
-	 return false
-	end
-	
-	return true
+function game_over()
+ _update = update_over
+ _draw = draw_over 
 end
 
-function explode(x,y)
- add(explosions,{x=x,y=y,t=0})
+function update_over()
+ 
+end
+
+function draw_over()
+ cls()
+ print("game over",50,50,4)
+end
+
+function abs_box(s)
+ local box = {}
+ box.x1 = s.box.x1 + s.x
+ box.y1 = s.box.y1 + s.y
+ box.x2 = s.box.x2 + s.x
+ box.y2 = s.box.y2 + s.y
+ 
+ return box
+end
+
+function coll(a,b)
+ local box_a = abs_box(a)
+ local	box_b = abs_box(b)
+ 
+ if box_a.x1 > box_b.x2 or
+ box_a.y1 > box_b.y2 or
+ box_b.x1 > box_a.x2 or
+ box_b.y1 > box_a.y2 then
+  return false
+ end
+ 
+ return true
 end
 
 function fire()
@@ -224,6 +221,10 @@ function fire()
   box = {x1=2,y1=0,x2=4,y2=4}
  }
  add(bullets,b)
+end
+
+function explode(x,y)
+ add(explosions,{x=x,y=y,t=0})
 end
 
 __gfx__
