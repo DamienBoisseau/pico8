@@ -1,11 +1,11 @@
 pico-8 cartridge // http://www.pico-8.com
 version 8
 __lua__
-debug = true
+debug = false
 
 -- options
 invicibility_frames = 30
-ship_max_health = 8
+ship_max_health = 4
 
 function _init()
  t=0
@@ -20,9 +20,8 @@ function _init()
   t=0,
   box = {x1=0,y1=0,x2=7,y2=7}
  }
- 
  bullets = {}
-
+ explosions = {}
  enemies = {}
  for i=1,5 do
 	 add(enemies, {
@@ -92,6 +91,7 @@ function update_game()
     del(enemies,e)
     del(bullets,b)
     ship.p += 1
+    explode(e.x,e.y)
    end
   end
  end
@@ -106,6 +106,13 @@ function update_game()
   	if ship.h <= 0 then
   		game_over()
   	end
+  end
+ end
+ 
+ for ex in all(explosions) do
+  ex.t+=1
+  if ex.t >= 13 then
+   del(explosions,ex)
   end
  end
  
@@ -128,9 +135,11 @@ end
 function draw_game()
  cls()
  
- print(ship.p,120,0)
+ print(ship.s,120,0,7)
  
- spr(ship.sp,ship.x,ship.y)
+ if not ship.i or t%8 > 4 then
+  spr(ship.sp,ship.x,ship.y)
+ end
  
   -- debug ship hitbox and invicibily frames
   if debug then
@@ -174,6 +183,10 @@ function draw_game()
   end
  end
  
+ for ex in all(explosions) do
+  circ(ex.x,ex.y,ex.t/3,8)
+ end
+ 
  for i=1,ship_max_health do
   if(i<=ship.h) then
    spr(33,0+6*i,0)
@@ -195,6 +208,10 @@ function coll(a,b)
 	end
 	
 	return true
+end
+
+function explode(x,y)
+ add(explosions,{x=x,y=y,t=0})
 end
 
 function fire()
