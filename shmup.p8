@@ -24,6 +24,14 @@ function _init()
  bullets = {}
  explosions = {}
  enemies = {}
+
+ for i=1,128 do
+  add(stars, {
+   x=rnd(128),
+   y=rnd(128),
+   s=rnd(2)+1
+  })
+ end
  
  -- TODO : Randomly generate enemies inside update_game()
  for i=1,5 do
@@ -52,6 +60,14 @@ function update_game()
   ship.sp = 1
  else
   ship.sp = 2
+ end
+ 
+ for s in all(stars) do
+  s.y -= s.s
+  if s.y <= 128 then
+   s.y = 0;
+   s.x = rnd(128)
+  end
  end
  
  for b in all(bullets) do
@@ -116,6 +132,10 @@ function draw_game()
  
  if not ship.i or t%8 > 4 then
   spr(ship.sp,ship.x,ship.y)
+ end
+ 
+ for s in all(stars) do
+  pset(s.x,x.y,7)
  end
  
  -- debug ship hitbox and invicibily frames
