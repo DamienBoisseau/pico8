@@ -9,6 +9,7 @@ ship_max_health = 4
 
 function _init()
  t=0
+ shake=false
  
  ship = {
   s=1,
@@ -136,11 +137,19 @@ function update_game()
  end
  
  if ship.i then
+  shake = true
   ship.t += 1
   if ship.t >= invicibility_frames then
+   shake = false
    ship.i = false
    ship.t = 0
   end
+ end
+ 
+ if shake then
+  camera(flr(rnd(4)-2))
+ else
+  camera()
  end
  
  if btn(0) then ship.x-=2 end
