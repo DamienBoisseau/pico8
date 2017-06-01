@@ -51,6 +51,7 @@ function respawn()
    d=1
   end
   add(enemies, {
+   h=flr(rnd(3)),
    sp=17,
    m_x=i*20,
    m_y=-20-i*8,
@@ -98,11 +99,17 @@ function update_game()
   
   for e in all(enemies) do
    if coll(e, b) then
-    del(enemies,e)
     del(bullets,b)
-    ship.p += 1
-    explode(e.x,e.y)
-    sfx(1)
+    e.h -= 1
+    if e.h <= 0 then
+     del(enemies,e)
+     ship.p += 1
+     explode(e.x,e.y)
+     sfx(1)
+    else
+     -- TODO create sfx when enemy hit
+     sfx(2)
+    end
    end
   end
  end
