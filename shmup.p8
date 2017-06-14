@@ -62,7 +62,8 @@ function respawn()
    d=d,
    r=16,
    box = {x1=0,y1=0,x2=7,y2=7},
-   p=health
+   p=health,
+   t=0
   })
  end
 end
@@ -110,8 +111,15 @@ function update_game()
      explode(e.x,e.y)
      sfx(1)
     else
-     -- todo create sfx when enemy hit
+     -- sound + enemy blinks when hit
      sfx(2)
+     e.t += 1
+     if e.t >= 3 then
+      e.sp = 18
+      e.t = 0
+     else
+      e.sp = 17
+     end
     end
    end
   end
